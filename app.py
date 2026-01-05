@@ -4,21 +4,23 @@ import os
 
 app = Flask(__name__)
 
-VERIFY_TOKEN = "my_verify_token_123"  # same token Meta dashboard me use karna
+VERIFY_TOKEN = "verifytoken123"
 WHATSAPP_TOKEN = os.environ.get("WHATSAPP_TOKEN")
 PHONE_NUMBER_ID = os.environ.get("PHONE_NUMBER_ID")
 
 @app.route("/webhook", methods=["GET", "POST"])
 def webhook():
-    # Verification
+
     if request.method == "GET":
+        mode = request.args.get("hub.mode")
         token = request.args.get("hub.verify_token")
         challenge = request.args.get("hub.challenge")
-        if token == VERIFY_TOKEN:
-            return challenge, 200
-        return "Verification failed", 403
 
-    # Receive messages
+        if mode == "subscribe" and token == VERIFY_TOKEN:
+            return challenge, 200
+        else:
+            return "Forbidden", 403
+
     if request.method == "POST":
         data = request.get_json()
         try:
@@ -39,6 +41,7 @@ def webhook():
                     reply = "🙏 Thanks! AUTO likhiye details ke liye."
 
                 send_message(sender, reply)
+
         except Exception as e:
             print(e)
 
